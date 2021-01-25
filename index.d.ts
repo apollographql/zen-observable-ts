@@ -1,3 +1,4 @@
-export { Observable } from "zen-observable";
+import Observable = require("zen-observable");
+export { Observable };
 export type Observer<T> = ZenObservable.Observer<T>;
 export type Subscription = ZenObservable.Subscription;
