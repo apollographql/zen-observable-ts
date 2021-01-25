@@ -10,6 +10,10 @@ import { Observable } from "zen-observable-ts";
 ```
 Note that this package does not currently have a default export, so the `{}` braces are mandatory.
 
+## Previous versions
+
+This tiny wrapper package replaces [an older version of `zen-observable-ts`](https://github.com/apollographql/apollo-link/tree/master/packages/zen-observable-ts) that used to provide TypeScript types for `zen-observable`, before `@types/zen-observable` was introduced. This version of the package is not intended to be perfectly compatible with the older version, so we have bumped the major version of the package to reflect the difference.
+
 ## Future plans
 
 As explained in https://github.com/apollographql/apollo-client/pull/7615, the `zen-observable-ts` package exists to fill a gap in the functionality of the `zen-observable` package, so we will retire this package in favor of using `zen-observable` directly, when/if [this PR](https://github.com/zenparsing/zen-observable/pull/74) is ever merged.
