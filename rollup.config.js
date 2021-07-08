@@ -1,14 +1,30 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
+import commonjs from "@rollup/plugin-commonjs";
 
-export default {
-  input: "./tests/index.ts",
-  output: {
-    file: "./tests/bundle.js",
-    format: "cjs",
+export default [
+  {
+    input: ["./src/index.js"],
+    plugins: [
+      nodeResolve(),
+      typescript(),
+      commonjs(),
+    ],
+    output: {
+      file: "index.js",
+      format: "cjs",
+      exports: "named",
+    },
   },
-  plugins: [
-    nodeResolve(),
-    typescript(),
-  ],
-};
+  {
+    input: ["./src/module.js"],
+    plugins: [
+      nodeResolve(),
+      typescript(),
+    ],
+    output: {
+      file: "module.js",
+      format: "es",
+    },
+  },
+];
