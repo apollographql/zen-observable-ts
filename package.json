@@ -15,6 +15,7 @@
   },
   "scripts": {
     "build": "rollup -c rollup.config.js",
+    "prepublish": "npm run build",
     "pretest": "npm run build && rollup -c rollup.test.config.js",
     "test": "mocha tests/bundle.js"
   },
