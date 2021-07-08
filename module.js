@@ -1,39 +1,52 @@
-// === Symbol Support ===
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function () {}; return { s: F, n: function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function (e) { throw e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function () { it = it.call(o); }, n: function () { var step = it.next(); normalCompletion = step.done; return step; }, e: function (e) { didErr = true; err = e; }, f: function () { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
-const hasSymbols = () => typeof Symbol === 'function';
-const hasSymbol = name => hasSymbols() && Boolean(Symbol[name]);
-const getSymbol = name => hasSymbol(name) ? Symbol[name] : '@@' + name;
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+// === Symbol Support ===
+var hasSymbols = function () {
+  return typeof Symbol === 'function';
+};
+
+var hasSymbol = function (name) {
+  return hasSymbols() && Boolean(Symbol[name]);
+};
+
+var getSymbol = function (name) {
+  return hasSymbol(name) ? Symbol[name] : '@@' + name;
+};
 
 if (hasSymbols() && !hasSymbol('observable')) {
   Symbol.observable = Symbol('observable');
 }
 
-const SymbolIterator = getSymbol('iterator');
-const SymbolObservable = getSymbol('observable');
-const SymbolSpecies = getSymbol('species');
-
-// === Abstract Operations ===
+var SymbolIterator = getSymbol('iterator');
+var SymbolObservable = getSymbol('observable');
+var SymbolSpecies = getSymbol('species'); // === Abstract Operations ===
 
 function getMethod(obj, key) {
-  let value = obj[key];
-
-  if (value == null)
-    return undefined;
-
-  if (typeof value !== 'function')
-    throw new TypeError(value + ' is not a function');
-
+  var value = obj[key];
+  if (value == null) return undefined;
+  if (typeof value !== 'function') throw new TypeError(value + ' is not a function');
   return value;
 }
 
 function getSpecies(obj) {
-  let ctor = obj.constructor;
+  var ctor = obj.constructor;
+
   if (ctor !== undefined) {
     ctor = ctor[SymbolSpecies];
+
     if (ctor === null) {
       ctor = undefined;
     }
   }
+
   return ctor !== undefined ? ctor : Observable;
 }
 
@@ -45,22 +58,25 @@ function hostReportError(e) {
   if (hostReportError.log) {
     hostReportError.log(e);
   } else {
-    setTimeout(() => { throw e });
+    setTimeout(function () {
+      throw e;
+    });
   }
 }
 
 function enqueue(fn) {
-  Promise.resolve().then(() => {
-    try { fn(); }
-    catch (e) { hostReportError(e); }
+  Promise.resolve().then(function () {
+    try {
+      fn();
+    } catch (e) {
+      hostReportError(e);
+    }
   });
 }
 
 function cleanupSubscription(subscription) {
-  let cleanup = subscription._cleanup;
-  if (cleanup === undefined)
-    return;
-
+  var cleanup = subscription._cleanup;
+  if (cleanup === undefined) return;
   subscription._cleanup = undefined;
 
   if (!cleanup) {
@@ -71,7 +87,8 @@ function cleanupSubscription(subscription) {
     if (typeof cleanup === 'function') {
       cleanup();
     } else {
-      let unsubscribe = getMethod(cleanup, 'unsubscribe');
+      var unsubscribe = getMethod(cleanup, 'unsubscribe');
+
       if (unsubscribe) {
         unsubscribe.call(cleanup);
       }
@@ -88,35 +105,38 @@ function closeSubscription(subscription) {
 }
 
 function flushSubscription(subscription) {
-  let queue = subscription._queue;
+  var queue = subscription._queue;
+
   if (!queue) {
     return;
   }
+
   subscription._queue = undefined;
   subscription._state = 'ready';
-  for (let i = 0; i < queue.length; ++i) {
+
+  for (var i = 0; i < queue.length; ++i) {
     notifySubscription(subscription, queue[i].type, queue[i].value);
-    if (subscription._state === 'closed')
-      break;
+    if (subscription._state === 'closed') break;
   }
 }
 
 function notifySubscription(subscription, type, value) {
   subscription._state = 'running';
-
-  let observer = subscription._observer;
+  var observer = subscription._observer;
 
   try {
-    let m = getMethod(observer, type);
+    var m = getMethod(observer, type);
+
     switch (type) {
       case 'next':
         if (m) m.call(observer, value);
         break;
+
       case 'error':
         closeSubscription(subscription);
-        if (m) m.call(observer, value);
-        else throw value;
+        if (m) m.call(observer, value);else throw value;
         break;
+
       case 'complete':
         closeSubscription(subscription);
         if (m) m.call(observer);
@@ -126,44 +146,45 @@ function notifySubscription(subscription, type, value) {
     hostReportError(e);
   }
 
-  if (subscription._state === 'closed')
-    cleanupSubscription(subscription);
-  else if (subscription._state === 'running')
-    subscription._state = 'ready';
+  if (subscription._state === 'closed') cleanupSubscription(subscription);else if (subscription._state === 'running') subscription._state = 'ready';
 }
 
 function onNotify(subscription, type, value) {
-  if (subscription._state === 'closed')
-    return;
+  if (subscription._state === 'closed') return;
 
   if (subscription._state === 'buffering') {
-    subscription._queue.push({ type, value });
+    subscription._queue.push({
+      type: type,
+      value: value
+    });
+
     return;
   }
 
   if (subscription._state !== 'ready') {
     subscription._state = 'buffering';
-    subscription._queue = [{ type, value }];
-    enqueue(() => flushSubscription(subscription));
+    subscription._queue = [{
+      type: type,
+      value: value
+    }];
+    enqueue(function () {
+      return flushSubscription(subscription);
+    });
     return;
   }
 
   notifySubscription(subscription, type, value);
 }
 
-
-class Subscription {
-
-  constructor(observer, subscriber) {
+var Subscription = /*#__PURE__*/function () {
+  function Subscription(observer, subscriber) {
     // ASSERT: observer is an object
     // ASSERT: subscriber is callable
-
     this._cleanup = undefined;
     this._observer = observer;
     this._queue = undefined;
     this._state = 'initializing';
-
-    let subscriptionObserver = new SubscriptionObserver(this);
+    var subscriptionObserver = new SubscriptionObserver(this);
 
     try {
       this._cleanup = subscriber.call(undefined, subscriptionObserver);
@@ -171,55 +192,82 @@ class Subscription {
       subscriptionObserver.error(e);
     }
 
-    if (this._state === 'initializing')
-      this._state = 'ready';
+    if (this._state === 'initializing') this._state = 'ready';
   }
 
-  get closed() {
-    return this._state === 'closed';
-  }
+  var _proto = Subscription.prototype;
 
-  unsubscribe() {
+  _proto.unsubscribe = function unsubscribe() {
     if (this._state !== 'closed') {
       closeSubscription(this);
       cleanupSubscription(this);
     }
+  };
+
+  _createClass(Subscription, [{
+    key: "closed",
+    get: function () {
+      return this._state === 'closed';
+    }
+  }]);
+
+  return Subscription;
+}();
+
+var SubscriptionObserver = /*#__PURE__*/function () {
+  function SubscriptionObserver(subscription) {
+    this._subscription = subscription;
   }
-}
 
-class SubscriptionObserver {
-  constructor(subscription) { this._subscription = subscription; }
-  get closed() { return this._subscription._state === 'closed' }
-  next(value) { onNotify(this._subscription, 'next', value); }
-  error(value) { onNotify(this._subscription, 'error', value); }
-  complete() { onNotify(this._subscription, 'complete'); }
-}
+  var _proto2 = SubscriptionObserver.prototype;
 
-class Observable {
+  _proto2.next = function next(value) {
+    onNotify(this._subscription, 'next', value);
+  };
 
-  constructor(subscriber) {
-    if (!(this instanceof Observable))
-      throw new TypeError('Observable cannot be called as a function');
+  _proto2.error = function error(value) {
+    onNotify(this._subscription, 'error', value);
+  };
 
-    if (typeof subscriber !== 'function')
-      throw new TypeError('Observable initializer must be a function');
+  _proto2.complete = function complete() {
+    onNotify(this._subscription, 'complete');
+  };
 
+  _createClass(SubscriptionObserver, [{
+    key: "closed",
+    get: function () {
+      return this._subscription._state === 'closed';
+    }
+  }]);
+
+  return SubscriptionObserver;
+}();
+
+var Observable = /*#__PURE__*/function () {
+  function Observable(subscriber) {
+    if (!(this instanceof Observable)) throw new TypeError('Observable cannot be called as a function');
+    if (typeof subscriber !== 'function') throw new TypeError('Observable initializer must be a function');
     this._subscriber = subscriber;
   }
 
-  subscribe(observer) {
+  var _proto3 = Observable.prototype;
+
+  _proto3.subscribe = function subscribe(observer) {
     if (typeof observer !== 'object' || observer === null) {
       observer = {
         next: observer,
         error: arguments[1],
-        complete: arguments[2],
+        complete: arguments[2]
       };
     }
-    return new Subscription(observer, this._subscriber);
-  }
 
-  forEach(fn) {
-    return new Promise((resolve, reject) => {
+    return new Subscription(observer, this._subscriber);
+  };
+
+  _proto3.forEach = function forEach(fn) {
+    var _this = this;
+
+    return new Promise(function (resolve, reject) {
       if (typeof fn !== 'function') {
         reject(new TypeError(fn + ' is not a function'));
         return;
@@ -230,8 +278,8 @@ class Observable {
         resolve();
       }
 
-      let subscription = this.subscribe({
-        next(value) {
+      var subscription = _this.subscribe({
+        next: function (value) {
           try {
             fn(value, done);
           } catch (e) {
@@ -240,190 +288,236 @@ class Observable {
           }
         },
         error: reject,
-        complete: resolve,
+        complete: resolve
       });
     });
-  }
+  };
 
-  map(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError(fn + ' is not a function');
+  _proto3.map = function map(fn) {
+    var _this2 = this;
 
-    let C = getSpecies(this);
+    if (typeof fn !== 'function') throw new TypeError(fn + ' is not a function');
+    var C = getSpecies(this);
+    return new C(function (observer) {
+      return _this2.subscribe({
+        next: function (value) {
+          try {
+            value = fn(value);
+          } catch (e) {
+            return observer.error(e);
+          }
 
-    return new C(observer => this.subscribe({
-      next(value) {
-        try { value = fn(value); }
-        catch (e) { return observer.error(e) }
-        observer.next(value);
-      },
-      error(e) { observer.error(e); },
-      complete() { observer.complete(); },
-    }));
-  }
-
-  filter(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError(fn + ' is not a function');
-
-    let C = getSpecies(this);
-
-    return new C(observer => this.subscribe({
-      next(value) {
-        try { if (!fn(value)) return; }
-        catch (e) { return observer.error(e) }
-        observer.next(value);
-      },
-      error(e) { observer.error(e); },
-      complete() { observer.complete(); },
-    }));
-  }
-
-  reduce(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError(fn + ' is not a function');
-
-    let C = getSpecies(this);
-    let hasSeed = arguments.length > 1;
-    let hasValue = false;
-    let seed = arguments[1];
-    let acc = seed;
-
-    return new C(observer => this.subscribe({
-
-      next(value) {
-        let first = !hasValue;
-        hasValue = true;
-
-        if (!first || hasSeed) {
-          try { acc = fn(acc, value); }
-          catch (e) { return observer.error(e) }
-        } else {
-          acc = value;
+          observer.next(value);
+        },
+        error: function (e) {
+          observer.error(e);
+        },
+        complete: function () {
+          observer.complete();
         }
-      },
+      });
+    });
+  };
 
-      error(e) { observer.error(e); },
+  _proto3.filter = function filter(fn) {
+    var _this3 = this;
 
-      complete() {
-        if (!hasValue && !hasSeed)
-          return observer.error(new TypeError('Cannot reduce an empty sequence'));
+    if (typeof fn !== 'function') throw new TypeError(fn + ' is not a function');
+    var C = getSpecies(this);
+    return new C(function (observer) {
+      return _this3.subscribe({
+        next: function (value) {
+          try {
+            if (!fn(value)) return;
+          } catch (e) {
+            return observer.error(e);
+          }
 
-        observer.next(acc);
-        observer.complete();
-      },
+          observer.next(value);
+        },
+        error: function (e) {
+          observer.error(e);
+        },
+        complete: function () {
+          observer.complete();
+        }
+      });
+    });
+  };
 
-    }));
-  }
+  _proto3.reduce = function reduce(fn) {
+    var _this4 = this;
 
-  concat(...sources) {
-    let C = getSpecies(this);
+    if (typeof fn !== 'function') throw new TypeError(fn + ' is not a function');
+    var C = getSpecies(this);
+    var hasSeed = arguments.length > 1;
+    var hasValue = false;
+    var seed = arguments[1];
+    var acc = seed;
+    return new C(function (observer) {
+      return _this4.subscribe({
+        next: function (value) {
+          var first = !hasValue;
+          hasValue = true;
 
-    return new C(observer => {
-      let subscription;
-      let index = 0;
+          if (!first || hasSeed) {
+            try {
+              acc = fn(acc, value);
+            } catch (e) {
+              return observer.error(e);
+            }
+          } else {
+            acc = value;
+          }
+        },
+        error: function (e) {
+          observer.error(e);
+        },
+        complete: function () {
+          if (!hasValue && !hasSeed) return observer.error(new TypeError('Cannot reduce an empty sequence'));
+          observer.next(acc);
+          observer.complete();
+        }
+      });
+    });
+  };
+
+  _proto3.concat = function concat() {
+    var _this5 = this;
+
+    for (var _len = arguments.length, sources = new Array(_len), _key = 0; _key < _len; _key++) {
+      sources[_key] = arguments[_key];
+    }
+
+    var C = getSpecies(this);
+    return new C(function (observer) {
+      var subscription;
+      var index = 0;
 
       function startNext(next) {
         subscription = next.subscribe({
-          next(v) { observer.next(v); },
-          error(e) { observer.error(e); },
-          complete() {
+          next: function (v) {
+            observer.next(v);
+          },
+          error: function (e) {
+            observer.error(e);
+          },
+          complete: function () {
             if (index === sources.length) {
               subscription = undefined;
               observer.complete();
             } else {
               startNext(C.from(sources[index++]));
             }
-          },
+          }
         });
       }
 
-      startNext(this);
-
-      return () => {
+      startNext(_this5);
+      return function () {
         if (subscription) {
           subscription.unsubscribe();
           subscription = undefined;
         }
       };
     });
-  }
+  };
 
-  flatMap(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError(fn + ' is not a function');
+  _proto3.flatMap = function flatMap(fn) {
+    var _this6 = this;
 
-    let C = getSpecies(this);
+    if (typeof fn !== 'function') throw new TypeError(fn + ' is not a function');
+    var C = getSpecies(this);
+    return new C(function (observer) {
+      var subscriptions = [];
 
-    return new C(observer => {
-      let subscriptions = [];
-
-      let outer = this.subscribe({
-        next(value) {
+      var outer = _this6.subscribe({
+        next: function (value) {
           if (fn) {
-            try { value = fn(value); }
-            catch (e) { return observer.error(e) }
+            try {
+              value = fn(value);
+            } catch (e) {
+              return observer.error(e);
+            }
           }
 
-          let inner = C.from(value).subscribe({
-            next(value) { observer.next(value); },
-            error(e) { observer.error(e); },
-            complete() {
-              let i = subscriptions.indexOf(inner);
+          var inner = C.from(value).subscribe({
+            next: function (value) {
+              observer.next(value);
+            },
+            error: function (e) {
+              observer.error(e);
+            },
+            complete: function () {
+              var i = subscriptions.indexOf(inner);
               if (i >= 0) subscriptions.splice(i, 1);
               completeIfDone();
-            },
+            }
           });
-
           subscriptions.push(inner);
         },
-        error(e) { observer.error(e); },
-        complete() { completeIfDone(); },
+        error: function (e) {
+          observer.error(e);
+        },
+        complete: function () {
+          completeIfDone();
+        }
       });
 
       function completeIfDone() {
-        if (outer.closed && subscriptions.length === 0)
-          observer.complete();
+        if (outer.closed && subscriptions.length === 0) observer.complete();
       }
 
-      return () => {
-        subscriptions.forEach(s => s.unsubscribe());
+      return function () {
+        subscriptions.forEach(function (s) {
+          return s.unsubscribe();
+        });
         outer.unsubscribe();
       };
     });
-  }
+  };
 
-  [SymbolObservable]() { return this }
+  _proto3[SymbolObservable] = function () {
+    return this;
+  };
 
-  static from(x) {
-    let C = typeof this === 'function' ? this : Observable;
+  Observable.from = function from(x) {
+    var C = typeof this === 'function' ? this : Observable;
+    if (x == null) throw new TypeError(x + ' is not an object');
+    var method = getMethod(x, SymbolObservable);
 
-    if (x == null)
-      throw new TypeError(x + ' is not an object');
-
-    let method = getMethod(x, SymbolObservable);
     if (method) {
-      let observable = method.call(x);
-
-      if (Object(observable) !== observable)
-        throw new TypeError(observable + ' is not an object');
-
-      if (isObservable(observable) && observable.constructor === C)
-        return observable;
-
-      return new C(observer => observable.subscribe(observer));
+      var observable = method.call(x);
+      if (Object(observable) !== observable) throw new TypeError(observable + ' is not an object');
+      if (isObservable(observable) && observable.constructor === C) return observable;
+      return new C(function (observer) {
+        return observable.subscribe(observer);
+      });
     }
 
     if (hasSymbol('iterator')) {
       method = getMethod(x, SymbolIterator);
+
       if (method) {
-        return new C(observer => {
-          enqueue(() => {
+        return new C(function (observer) {
+          enqueue(function () {
             if (observer.closed) return;
-            for (let item of method.call(x)) {
-              observer.next(item);
-              if (observer.closed) return;
+
+            var _iterator = _createForOfIteratorHelper(method.call(x)),
+                _step;
+
+            try {
+              for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                var item = _step.value;
+                observer.next(item);
+                if (observer.closed) return;
+              }
+            } catch (err) {
+              _iterator.e(err);
+            } finally {
+              _iterator.f();
             }
+
             observer.complete();
           });
         });
@@ -431,51 +525,63 @@ class Observable {
     }
 
     if (Array.isArray(x)) {
-      return new C(observer => {
-        enqueue(() => {
+      return new C(function (observer) {
+        enqueue(function () {
           if (observer.closed) return;
-          for (let i = 0; i < x.length; ++i) {
+
+          for (var i = 0; i < x.length; ++i) {
             observer.next(x[i]);
             if (observer.closed) return;
           }
+
           observer.complete();
         });
       });
     }
 
     throw new TypeError(x + ' is not observable');
-  }
+  };
 
-  static of(...items) {
-    let C = typeof this === 'function' ? this : Observable;
+  Observable.of = function of() {
+    for (var _len2 = arguments.length, items = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      items[_key2] = arguments[_key2];
+    }
 
-    return new C(observer => {
-      enqueue(() => {
+    var C = typeof this === 'function' ? this : Observable;
+    return new C(function (observer) {
+      enqueue(function () {
         if (observer.closed) return;
-        for (let i = 0; i < items.length; ++i) {
+
+        for (var i = 0; i < items.length; ++i) {
           observer.next(items[i]);
           if (observer.closed) return;
         }
+
         observer.complete();
       });
     });
-  }
+  };
 
-  static get [SymbolSpecies]() { return this }
+  _createClass(Observable, null, [{
+    key: SymbolSpecies,
+    get: function () {
+      return this;
+    }
+  }]);
 
-}
+  return Observable;
+}();
 
 if (hasSymbols()) {
   Object.defineProperty(Observable, Symbol('extensions'), {
     value: {
       symbol: SymbolObservable,
-      hostReportError,
+      hostReportError: hostReportError
     },
-    configurable: true,
+    configurable: true
   });
 }
 
-// When a non-native class constructor function attempts to subclass
 // Observable, compilers like Babel and TypeScript may compile the
 // super(subscriber) expression to Observable.call(this, subscriber) or
 // Observable.apply(this, arguments). Calling a native class constructor
@@ -496,9 +602,7 @@ Observable.apply = function (instance, args) {
 };
 
 function construct(Super, instance, subscriber) {
-  return typeof Reflect === 'object'
-    ? Reflect.construct(Super, [subscriber], instance.constructor)
-    : Function.prototype.call.call(Super, instance, subscriber) || instance;
+  return typeof Reflect === 'object' ? Reflect.construct(Super, [subscriber], instance.constructor) : Function.prototype.call.call(Super, instance, subscriber) || instance;
 }
 
 export { Observable };
