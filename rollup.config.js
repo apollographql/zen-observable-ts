@@ -4,19 +4,6 @@ import commonjs from "@rollup/plugin-commonjs";
 
 export default [
   {
-    input: ["./src/index.js"],
-    plugins: [
-      nodeResolve(),
-      typescript(),
-      commonjs(),
-    ],
-    output: {
-      file: "index.js",
-      format: "cjs",
-      exports: "named",
-    },
-  },
-  {
     input: ["./src/module.js"],
     plugins: [
       nodeResolve(),
