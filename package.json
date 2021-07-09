@@ -20,8 +20,8 @@
     "test": "mocha tests/bundle.js"
   },
   "dependencies": {
-    "@types/zen-observable": "^0.8.2",
-    "zen-observable": "^0.8.15"
+    "@types/zen-observable": "0.8.3",
+    "zen-observable": "0.8.15"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
