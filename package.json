@@ -1,6 +1,6 @@
 {
   "name": "zen-observable-ts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Thin wrapper around zen-observable and @types/zen-observable, to support ESM exports as well as CommonJS exports",
   "license": "MIT",
   "main": "index.js",
