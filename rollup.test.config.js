@@ -1,14 +1,12 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
 
 export default {
-  input: "./tests/index.ts",
+  input: "./dist/tests/index.js",
   output: {
-    file: "./tests/bundle.js",
+    file: "./dist/tests/bundle.cjs",
     format: "cjs",
   },
   plugins: [
     nodeResolve(),
-    typescript(),
   ],
 };
