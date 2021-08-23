@@ -1,3 +1,4 @@
 tests/
-rollup.config.js
+dist/tests/
+rollup.*.js
 *.tgz

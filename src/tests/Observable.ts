@@ -3,9 +3,9 @@ const { expect } = require("chai") as typeof import("chai");
 import type {
   Observable,
   Subscriber,
-} from "..";
+} from "../module";
 
-export default function (Observable: typeof import("..").Observable) {
+export default function (Observable: typeof import("../module").Observable) {
   describe("Observable", () => {
     it("Should be a constructor function", () => {
       expect(typeof Observable).to.equal("function");
@@ -50,7 +50,7 @@ export default function (Observable: typeof import("..").Observable) {
       }
 
       it('simulating super(sub) with Observable.call(this, sub)', () => {
-        function SubclassWithSuperCall<T>(sub: Subscriber<T>) {
+        function SubclassWithSuperCall<T>(this: any, sub: Subscriber<T>) {
           const self = Observable.call(this, sub) || this;
           self.sub = sub;
           return self;
@@ -59,7 +59,7 @@ export default function (Observable: typeof import("..").Observable) {
       });
 
       it('simulating super(sub) with Observable.apply(this, arguments)', () => {
-        function SubclassWithSuperApplyArgs<T>(_sub: Subscriber<T>) {
+        function SubclassWithSuperApplyArgs<T>(this: any, _sub: Subscriber<T>) {
           const self = Observable.apply(this, arguments) || this;
           self.sub = _sub;
           return self;
@@ -68,7 +68,7 @@ export default function (Observable: typeof import("..").Observable) {
       });
 
       it('simulating super(sub) with Observable.apply(this, [sub])', () => {
-        function SubclassWithSuperApplyArray<T>(...args: [Subscriber<T>]) {
+        function SubclassWithSuperApplyArray<T>(this: any, ...args: [Subscriber<T>]) {
           const self = Observable.apply(this, args) || this;
           self.sub = args[0];
           return self;

@@ -18,7 +18,7 @@ const babelPlugins = zenBabelPlugins
 
 export default [
   {
-    input: ["./src/module.js"],
+    input: ["./dist/module.js"],
     plugins: [
       nodeResolve(),
       babel({
@@ -27,8 +27,9 @@ export default [
       }),
     ],
     output: {
-      file: "module.js",
+      file: "dist/module.js",
       format: "esm",
+      sourcemap: true,
     },
   },
 ];
