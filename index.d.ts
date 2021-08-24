@@ -1,9 +1,3 @@
-declare global {
-  interface SymbolConstructor {
-    readonly observable: symbol;
-  }
-}
-
 export interface Subscription {
   closed: boolean;
   unsubscribe(): void;
