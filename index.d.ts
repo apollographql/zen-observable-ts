@@ -29,6 +29,12 @@ interface ObservableLike<T> {
 export declare class Observable<T> {
   constructor(subscriber: Subscriber<T>);
 
+  // For backwards compatibility when super(subscriber) is transpiled to
+  // Observable.call(this, subscriber), which typically happens when the
+  // Observable class is compiled to ES5 function contructor syntax.
+  static call<R>(instance: Observable<R>, subscriber: Subscriber<R>): undefined;
+  static apply<R>(instance: Observable<R>, args: IArguments | [Subscriber<R>]): undefined;
+
   subscribe(observer: Observer<T>): Subscription;
   subscribe(
     onNext: (value: T) => void,
