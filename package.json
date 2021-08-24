@@ -3,7 +3,8 @@
   "version": "1.2.1",
   "description": "Thin wrapper around zen-observable and @types/zen-observable, to support ESM exports as well as CommonJS exports",
   "license": "MIT",
-  "main": "index.js",
+  "type": "module",
+  "main": "index.cjs",
   "module": "module.js",
   "types": "module.d.ts",
   "repository": {
@@ -17,7 +18,7 @@
     "build": "rollup -c rollup.config.js",
     "prepare": "npm run build",
     "pretest": "npm run build && rollup -c rollup.test.config.js",
-    "test": "mocha tests/bundle.js"
+    "test": "mocha tests/bundle.cjs"
   },
   "dependencies": {
     "zen-observable": "0.8.15"

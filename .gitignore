@@ -104,4 +104,4 @@ dist
 .tern-port
 
 # Generated testing bundle
-tests/bundle.js
+tests/bundle.cjs
