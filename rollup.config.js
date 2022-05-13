@@ -1,3 +1,4 @@
+import { promises as fs } from "fs";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 
@@ -19,16 +20,25 @@ const babelPlugins = zenBabelPlugins
 export default [
   {
     input: ["./src/module.js"],
+    output: {
+      file: "module.js",
+      format: "esm",
+    },
     plugins: [
       nodeResolve(),
       babel({
         plugins: babelPlugins,
         babelHelpers: "inline",
       }),
+      {
+        name: "copy index.cjs to index.cjs.native.js",
+        async writeBundle() {
+          await fs.writeFile(
+            "index.cjs.native.js",
+            await fs.readFile("index.cjs"),
+          );
+        },
+      },
     ],
-    output: {
-      file: "module.js",
-      format: "esm",
-    },
   },
 ];
